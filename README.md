@@ -66,7 +66,7 @@ Button Released
 
 ## Notes
 
-If the blinking is to fast it will be impossible to get a command in edgewise because of the voice responce to the led turning on and off during blinking.
+If the blinking is too fast it will be impossible to get a command in edgewise because of the voice responce to the led turning on and off during blinking.
 
 ## Circuit
 For now, use the below image as a guide to the circuit.
