@@ -67,3 +67,7 @@ Button Released
 ## Notes
 
 If the blinking is to fast it will be impossible to get a command in edgewise because of the voice responce to the led turning on and off during blinking.
+
+## Circuit
+For now, use the below image as a guide to the circuit.
+![](https://github.com/MycroftAI/picroft_example_skill_gpio/blob/master/IMG_20170706_153744.jpg)
