@@ -1,68 +1,45 @@
-# picroft example skill gpio Readme
+## Raspberry Pi GPIO Demo
+Example of interacting with GPIO on a Raspberry Pi
 
-This is a skill for picroft that will interact with the GPIO
+## Description 
+Demonstrates interacting with Raspberry Pi GPIO with a Mycroft skill.  This explores both reading from a GPIO port (detecting a pushbutton) and writing to it (illuminating an LED).
 
-## Requirements
+## Examples 
+* "Turn LED on "
+* "Turn LED off"
+* "Blink LED"
+* "LED status"
 
-This requires a Picroft install on the RPi you can find instructions on the home.mycroft.ai site.
-Be sure that mycroft user has the following the group for gpio
+## Credits 
+@amcgee7
+Mycroft AI
 
-## Documenting
+## Require 
+platform_mark1 platform_picroft 
 
-### Requires
+## Exclude 
+platform_plasmoid 
 
-These are required for doc generation.
-
- - graphviz
- - sphinx
- - python-rpi.gpio
- - python3-rpi.gpio
+## Documentation
 
 ### Generation
 
-The documentation is done by sphinx with some of it in the code.  The following will generate the html docs.
+The documentation is done by Sphinx with some of it in the code.  The following will generate the html docs.
 
 ```make docs```
 
 You can then find the generated html in ```docs/build/html/index.html```.  Open that file in your browser and you should be able to navigate the docs.
 
 ## Installing
-Once you have a picroft image configure it for SSH access.  Change the Makefile ip address for the RPi you installed the image onto. Also create the folder ```/opt/mycroft/skills/skill-gpio``` on the RPi for the installer.
+Change the Makefile IP address for the RPi installation.  Also create the folder ```/opt/mycroft/skills/skill-gpio``` on the RPi for the installer.
 
 ```make install.pi```
-
-This will installl this source onto the RPi.
 
 ## Testing
 
 ```make test.pi```
 
 This will run a test to be sure you have access to the gpio be sure to test on the system in a simular manner as mycroft.
-
-## Using
-
-Once installed on a paired Picroft you should be able to issue commands:
-
-```
-Turn Led On
-Turn Led Off
-Blink Led
-Led Status
-```
-
-And Picroft should respond with the following.
-
-```
-Led is Off
-Led is On
-Button Pressed
-Button Released
-```
-
-## Files
-
-    vocab - This captures entities used by the skill to understand the vocal command.
-    dialog - This is used for responces back to the users.
 
 ## Notes
 
