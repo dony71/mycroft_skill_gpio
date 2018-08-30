@@ -18,8 +18,12 @@ You can then find the generated html in ```docs/build/html/index.html```.  Open 
 
 ### Installing from the `makefile`
 
-* Change the Makefile IP address for the RPi installation to the IP address of your RPi. That is, edit the file `makefile` using your favorite editor like `nano` or `vi`. The line you will need to change is `scp -r * pi@192.168.205.115:/opt/mycroft/skills/skill-gpio`. Change this to have the IP address of your RPi. 
-* Create the folder ```/opt/mycroft/skills/skill-gpio``` on the RPi for the installer. You can do this by using the command `mkdir /opt/mycroft/skills/skill-gpio`
+* Change the Makefile IP address for the RPi installation to the IP address of your RPi. 
+That is, edit the file `makefile` using your favorite editor like `nano` or `vi`. 
+The line you will need to change is `scp -r * pi@192.168.205.115:/opt/mycroft/skills/skill-gpio`. 
+Change this to have the IP address of your RPi. 
+* Create the folder ```/opt/mycroft/skills/skill-gpio``` on the RPi for the installer. 
+You can do this by using the command `mkdir /opt/mycroft/skills/skill-gpio`
 * Build the code using the `makefile`.  ```make install.pi```
 
 ### Testing the `makefile`
