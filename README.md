@@ -6,7 +6,7 @@ This Skill demonstrates how to interact with the Raspberry Pi GPIO pins using a 
 
 ### Preparation
 
-(You will need to first install the GPIO libraries for Picroft, and add some additional permissions](https://mycroft.ai/documentation/picroft/#using-the-gpio-pins-on-the-raspberry-pi-3).
+[You will need to first install the GPIO libraries for Picroft, and add some additional permissions](https://mycroft.ai/documentation/picroft/#using-the-gpio-pins-on-the-raspberry-pi-3).
 
 ### Generation
 
