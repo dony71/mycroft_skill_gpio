@@ -48,10 +48,10 @@ Please use the below image as a guide to the circuit layout:
 ![](https://github.com/MycroftAI/picroft_example_skill_gpio/blob/master/IMG_20170706_153744.jpg)
 
 ## Examples 
-* "Turn LED on"
-* "Turn LED off"
-* "Blink LED"
-* "LED status"
+* "Turn LED red on"
+* "Turn LED red off"
+* "Blink green LED"
+* "LED red status"
 
 ## Credits 
 @amcgee7
