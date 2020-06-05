@@ -54,7 +54,9 @@ def ButtonHandeler(channel):
 """This is the setup for the RPi GPIO"""
 if pi_interface:
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(27,GPIO.OUT)
+    #GPIO.setup(27,GPIO.OUT)
+    GPIO.setup(12,GPIO.OUT)
+    GPIO.setup(13,GPIO.OUT)
     GPIO.setup(17,GPIO.IN)
     GPIO.add_event_detect(17,GPIO.BOTH,ButtonHandeler)
 
@@ -71,9 +73,14 @@ def set(key,value):
     GPIO_STATE[key] = value
     if (key=="GPIO1") and pi_interface:
         if value.upper()=="ON":
-            GPIO.output(27,GPIO.HIGH)
+            GPIO.output(12,GPIO.HIGH)
         else:
-            GPIO.output(27,GPIO.LOW)
+            GPIO.output(12,GPIO.LOW)
+    if (key=="GPIO2") and pi_interface:
+        if value.upper()=="ON":
+            GPIO.output(13,GPIO.HIGH)
+        else:
+            GPIO.output(13,GPIO.LOW)
     if key in GPIO_ON:
         GPIO_ON[key]()
 
@@ -108,21 +115,31 @@ if __name__=="__main__":
     def printgpio():
         print(GPIO_STATE)
 
-    def blink_led():
+    def blink_led_red():
         if blink_active:
-            threading.Timer(0.5, blink_led).start()
+            threading.Timer(0.5, blink_led_red).start()
         if get("GPIO1")!="On":
             set("GPIO1","On")
         else:
             set("GPIO1","Off")
 
+    def blink_led_green():
+        if blink_active:
+            threading.Timer(0.5, blink_led_green).start()
+        if get("GPIO2")!="On":
+            set("GPIO2","On")
+        else:
+            set("GPIO2","Off")
+
     on("GPIO1",printgpio)
+    on("GPIO2",printgpio)
 
     set("GPIO1","On")
+    set("GPIO2","On")
     blink_active = True
-    blink_led()
+    blink_led_red()
+    blink_led_green()
     time.sleep(10)
     blink_active = False
     if pi_interface:
         print("GPIO is valid")
-
