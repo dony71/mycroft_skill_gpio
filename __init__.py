@@ -26,45 +26,45 @@ class Respeaker2MicGpioSkill(MycroftSkill):
     def __init__(self):
         #super(GPIOSkill, self).__init__(name="GPIOSkill")
         super(Respeaker2MicGpioSkill, self).__init__(name="Respeaker2MicGpioSkill")
-        GPIO_STATE = {}    # This is an object of tracking GPIO
-        GPIO_ON = ()       # This maps functions to gpio activity 
+#        GPIO_STATE = {}    # This is an object of tracking GPIO
+#        GPIO_ON = ()       # This maps functions to gpio activity 
         #self. blink_active = False
         #GPIO.on("Button",self.on_button_change)
         self.myKeywords = []
 
-    def on(key,function):
-        """Used to set the function for the GPIO interface
-           Args:
-           key(int or str): Used to identify the gpio to interface
-           function(function): The function for the gpioi"""
-        GPIO_ON[key]= function
-
-    def get(key):
-        """ Returns the value of the givien GPIO
-            Args:
-            key(int or str): Used to identify the gpio to interface"""
-        return GPIO_STATE[key]
-
-    def set(key,value):
-        """This function is used to set values for each of GPIO's Will also call
-           the GPIO's function if it exisits.
-           Args:
-           key(int or str): Used to identify the gpio to interface
-           value(int or str): The value to set the gpio to."""
-        GPIO_STATE[key] = value
-        if key in GPIO_ON:
-            GPIO_ON[key]()
-
-    def on_button_change(self):
-        status = self.get("Button")
-        self.speak("Button is %s" % status)
+#    def on(key,function):
+#        """Used to set the function for the GPIO interface
+#           Args:
+#           key(int or str): Used to identify the gpio to interface
+#           function(function): The function for the gpioi"""
+#        GPIO_ON[key]= function
+#
+#    def get(key):
+#        """ Returns the value of the givien GPIO
+#            Args:
+#            key(int or str): Used to identify the gpio to interface"""
+#        return GPIO_STATE[key]
+#
+#    def set(key,value):
+#        """This function is used to set values for each of GPIO's Will also call
+#           the GPIO's function if it exisits.
+#           Args:
+#           key(int or str): Used to identify the gpio to interface
+#           value(int or str): The value to set the gpio to."""
+#        GPIO_STATE[key] = value
+#        if key in GPIO_ON:
+#            GPIO_ON[key]()
+#
+#    def on_button_change(self):
+#        status = self.get("Button")
+#        self.speak("Button is %s" % status)
 
     # This handels the button press and sets the stat
     def ButtonHandeler(channel):
         if GPIO.input(channel) == GPIO.HIGH:
-            self.set("Button","Released")
+            self.speak("Button is Released")
         else:
-            self.set("Button","Pressed")
+            self.speak("Button is Pressed")
 
     # This method loads the files needed for the skill's functioning, and
     # creates and registers each intent that the skill uses
@@ -74,7 +74,7 @@ class Respeaker2MicGpioSkill(MycroftSkill):
 
         GPIO.setup(11,GPIO.IN)
         GPIO.add_event_detect(11,GPIO.BOTH,ButtonHandeler)
-        self. blink_active = False
+        self.blink_active = False
         self.on("Button",self.on_button_change)
 
         self.load_data_files(dirname(__file__))
