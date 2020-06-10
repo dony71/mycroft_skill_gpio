@@ -58,13 +58,13 @@ class Respeaker2MicGpioSkill(MycroftSkill):
 #    def on_button_change(self):
 #        status = self.get("Button")
 #        self.speak("Button is %s" % status)
-
-    # This handels the button press and sets the stat
-    def ButtonHandeler(channel):
-        if GPIO.input(channel) == GPIO.HIGH:
-            self.speak("Button is Released")
-        else:
-            self.speak("Button is Pressed")
+#
+#    # This handels the button press and sets the stat
+#    def ButtonHandeler(channel):
+#        if GPIO.input(channel) == GPIO.HIGH:
+#            self.speak("Button is Released")
+#        else:
+#            self.speak("Button is Pressed")
 
     # This method loads the files needed for the skill's functioning, and
     # creates and registers each intent that the skill uses
@@ -79,7 +79,6 @@ class Respeaker2MicGpioSkill(MycroftSkill):
 
         self.load_data_files(dirname(__file__))
         command_intent = IntentBuilder("GPIOIntent").\
-            #require("GpioKeyword").\
             require("ItemKeyword").\
             optionally("ColorKeyword").\
             one_of("OnKeyword", "OffKeyword", "BlinkKeyword").build()
@@ -140,6 +139,13 @@ class Respeaker2MicGpioSkill(MycroftSkill):
         else:
             self.speak('No LED Color was specified')
 
+    def ButtonHandeler(self, channel):
+        button = GPIO.input(11)
+        #if GPIO.input(channel) == GPIO.HIGH:
+        if button:
+            self.speak("Button is Released")
+        else:
+            self.speak("Button is Pressed")
 
     def gpio_on(self, board_number, gpio_request_number):
         self.blink_active = False
