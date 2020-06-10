@@ -2,7 +2,7 @@
 Example of interacting with GPIO pins on a Raspberry Pi
 
 ## About 
-This Skill demonstrates how to interact with the Raspberry Pi GPIO pins using a Mycroft Skill. This Skill shows both reading data from a GPIO port (detecting a button press) and writing data to the port (illuminating an LED). 
+This Skill demonstrates how to interact with the Raspberry Pi GPIO pins using a Mycroft Skill. This Skill shows both reading data from a GPIO port (detecting a button press) and writing data to the port (hook illuminating LEDs) on Respeaker 2-Mic HAT board.
 
 ### Preparation
 
@@ -30,32 +30,15 @@ Change this to have the IP address of your RPi.
 
 You can do this by using the command `mkdir /opt/mycroft/skills/skill-gpio`
 
-* Build the code using the `makefile`.  ```make install.pi```
-
-### Testing the `makefile`
-
-```make test.pi```
-
-This will run a test to be sure you have access to the GPIO and will report any errors that are identified. 
-
 ### Notes
 
 If the LED blinking is too fast, it will be difficult to get a command to execute because there will be a voice response when the the LED turns off and on. Turn the blinking to a lower frequency to be able to execute commands. 
 
-### Circuit
-Please use the below image as a guide to the circuit layout: 
-
-![](https://github.com/MycroftAI/picroft_example_skill_gpio/blob/master/IMG_20170706_153744.jpg)
-
 ## Examples 
-* "Turn LED red on"
-* "Turn LED red off"
+* "Turn red LED on"
+* "Turn red LED off"
 * "Blink green LED"
-* "LED red status"
-
-## Credits 
-@amcgee7
-Mycroft AI (@MycroftAI)
+* "Blink red LED"
 
 ## Supported Devices 
 platform_mark1 platform_picroft 
