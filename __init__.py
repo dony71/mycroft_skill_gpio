@@ -1,277 +1,179 @@
-
-# Copyright 2018, Mycroft AI Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# -*- coding: utf-8 -*-
-"""Skill controlls GPIO on Raspberry Pi.
-
-This allows users to control an LED The LED is Attached to GPIO1
-
-Example:
-    literal blocks::
-
-        Turn xxx Led On
-        Turn xxx Led Off
-        Blink xxx Led
-        xxx Led Status
-
-    where xxx either Red or Green
-
-Responses:
-    literal blocks::
-
-        xxx Led is Off
-        xxx Led is On
-        Button Pressed
-        Button Released
-
-    where xxx either Red or Green
-
-"""
-
-from os.path import dirname, abspath
-import sys
-import requests
-import json
-import threading
-
-sys.path.append(abspath(dirname(__file__)))
-
+from os.path import dirname
 from adapt.intent import IntentBuilder
-try:
-    from mycroft.skills.core import MycroftSkill
-except:
-    class MycroftSkill:
-        pass
+from mycroft.skills.core import MycroftSkill
+from mycroft.util.log import getLogger
+from mycroft.util.log import LOG
 
-#import logging.handlers
+import RPi.GPIO as GPIO
+import threading
+import time
+import re
 
-import GPIO
-""" Includes the GPIO interface"""
+__author__ = 'dony71'
 
-__author__ = 'don71'
+# Logger: used for debug lines, like "LOGGER.debug(xyz)". These
+# statements will show up in the command line when running Mycroft.
+LOGGER = getLogger(__name__)
 
 
-#class GPIO_ControlSkill(MycroftSkill):
+# The logic of each skill is contained within its own class, which inherits
+# base methods from the MycroftSkill class with the syntax you can see below:
+# "class ____Skill(MycroftSkill)"
+#class GPIOSkill(MycroftSkill):
 class Respeaker2MicGpioSkill(MycroftSkill):
-    """This is the skill for controlling GPIO of the Raspberry Pi
 
-    Attributes:
-        blink_active (bool): Defauts to False and is true while the
-            led is suppost to be blinking.  Will be turned to False on
-            repeated blink command or when the led is instructed to go
-            on or off.
-    """
+    # The constructor of the skill, which calls Mycroft Skill's constructor
+    def __init__(self):
+        #super(GPIOSkill, self).__init__(name="GPIOSkill")
+        super(Respeaker2MicGpioSkill, self).__init__(name="Respeaker2MicGpioSkill")
+        GPIO_STATE = {}    # This is an object of tracking GPIO
+        GPIO_ON = ()       # This maps functions to gpio activity 
+        #self. blink_active = False
+        #GPIO.on("Button",self.on_button_change)
+        self.myKeywords = []
 
-    def on_red_led_change(self):
-        """used to report the state of the led.
+    def on(key,function):
+        """Used to set the function for the GPIO interface
+           Args:
+           key(int or str): Used to identify the gpio to interface
+           function(function): The function for the gpioi"""
+        GPIO_ON[key]= function
 
-        This is attached to the on change event.  And will speak the
-        status of the led.
-        """
-        status = GPIO.get("GPIO1")
-        self.speak("Red Led is %s" % status)
+    def get(key):
+        """ Returns the value of the givien GPIO
+            Args:
+            key(int or str): Used to identify the gpio to interface"""
+        return GPIO_STATE[key]
 
-    def on_green_led_change(self):
-        """used to report the state of the led.
-
-        This is attached to the on change event.  And will speak the
-        status of the led.
-        """
-        status = GPIO.get("GPIO2")
-        self.speak("Green Led is %s" % status)
+    def set(key,value):
+        """This function is used to set values for each of GPIO's Will also call
+           the GPIO's function if it exisits.
+           Args:
+           key(int or str): Used to identify the gpio to interface
+           value(int or str): The value to set the gpio to."""
+        GPIO_STATE[key] = value
+        if key in GPIO_ON:
+            GPIO_ON[key]()
 
     def on_button_change(self):
-        status = GPIO.get("Button")
+        status = self.get("Button")
         self.speak("Button is %s" % status)
 
-    def __init__(self):
-        """This is used to initize the GPIO kill
+    # This handels the button press and sets the stat
+    def ButtonHandeler(channel):
+        if GPIO.input(channel) == GPIO.HIGH:
+            self.set("Button","Released")
+        else:
+            self.set("Button","Pressed")
 
-        This will set the default of blink_active and setup the function
-        for listening to the io change.
-        """
-        self.blink_active = False
-        GPIO.on("GPIO1",self.on_red_led_change)
-        GPIO.on("GPIO2",self.on_green_led_change)
-        GPIO.on("Button",self.on_button_change)
-        super(Respeaker2MicGpioSkill, self).__init__(name="Respeaker2MicGpioSkill")
-
-    def blink_red_led(self):
-        """This Will Start the Led blink process
-
-        This function will start the led blink process and continue
-        until blink_active is false.
-        """
-        if self.blink_active:
-            threading.Timer(10, self.blink_red_led).start()
-        if self.blink_active:
-            if GPIO.get("GPIO1")!="On":
-                GPIO.set("GPIO1","On")
-            else:
-                GPIO.set("GPIO1","Off")
-
-    def blink_green_led(self):
-        """This Will Start the Led blink process
-
-        This function will start the led blink process and continue
-        until blink_active is false.
-        """
-        if self.blink_active:
-            threading.Timer(10, self.blink_green_led).start()
-        if self.blink_active:
-            if GPIO.get("GPIO2")!="On":
-                GPIO.set("GPIO2","On")
-            else:
-                GPIO.set("GPIO2","Off")
-
+    # This method loads the files needed for the skill's functioning, and
+    # creates and registers each intent that the skill uses
     def initialize(self):
-        """This function will initialize the Skill for Blinking an LED
+        #self.io_pins = [3, 5, 7, 29, 31, 26, 24, 21, 19, 23, 32, 33, 8, 10, 36, 11, 12, 35, 38, 40, 15, 16, 18, 22, 37, 13]
+        GPIO.setmode(GPIO.BOARD)
 
-        This creates two intents
-            * IoCommandIntent - Will fire for any command that controlls the LED
-            * SystemQueryIntent - Will fire for any system command
+        GPIO.setup(11,GPIO.IN)
+        GPIO.add_event_detect(11,GPIO.BOTH,ButtonHandeler)
+        self. blink_active = False
+        self.on("Button",self.on_button_change)
 
-        The SystemQueryIntent was desinged for debug info while testing
-        and is not required going forward.
-
-        """
         self.load_data_files(dirname(__file__))
-
-        command_intent = IntentBuilder("IoCommandIntent").require("command").optionally("iovar").require("ioobject").optionally("ioparam").build()
-        #command_intent = IntentBuilder("IoCommandIntent").require("command").optionally("iovar").optionally("ioobject").optionally("ioparam").build()
-        system_intent = IntentBuilder("SystemQueryIntent").require("question").require("systemobject").build()
+        command_intent = IntentBuilder("GPIOIntent").\
+            #require("GpioKeyword").\
+            require("ItemKeyword").\
+            optionally("ColorKeyword").\
+            one_of("OnKeyword", "OffKeyword", "BlinkKeyword").build()
 
         self.register_intent(command_intent, self.handle_command_intent)
-        self.register_intent(system_intent, self.handle_system_intent)
-
-    def handle_system_intent(self, message):
-        """This is the handeler for system intent.
-
-        This will handle all questions of the system for debug info.
-
-        Args:
-            message(obj):
-                This is the object containing the message that fired the
-                intent.  This is used to discover what to do within the
-                intent.
-        """
-        if message.data["systemobject"] == "Name":
-            self.speak_dialog("name")
-            self.speak(__name__)
-        elif message.data["systemobject"] == "GPIO":
-            self.speak_dialog("check")
-            if GPIO.is_imported:
-                self.speak("GPIO is Imported")
-            else:
-                self.speak("GPIO is not Imported")
-        elif message.data["systemobject"] == "Modules":
-            self.speak_dialog("modules")
-            for module in sys.modules:
-                self.speak(module)
-        elif message.data["systemobject"] == "Path":
-            self.speak_dialog("path")
-            for path in sys.path:
-                self.speak(path)
 
     def handle_command_intent(self, message):
-        """This will handle all command intents for controlling GPIO
+        #str_limits = []
+        #str_remainder = str(message.utterance_remainder())
+        #if (str_remainder.find('for') != -1) or (str_remainder.find('four') != -1):
+        #    str_limits = [4]
+        #else:
+        #    str_limits = re.findall('\d+', str_remainder)
+        #
+        #if str_limits:
+        #    gpio_request = int(str_limits[0])
+        #    if (gpio_request > 1) and (gpio_request < 28):
+        #        pin_index = gpio_request - 2
+        #        board_pin = self.io_pins[pin_index]
+        #        LOG.info('The pin number requested was: ' + str(board_pin))
+        #        if "OnKeyword" in message.data:
+        #            self.gpio_on(board_pin, gpio_request)
+        #        if "OffKeyword" in message.data:
+        #            self.gpio_off(board_pin, gpio_request)
+        #    else:
+        #        self.speak_dialog("error", data={"result": str(gpio_request)})
+        #else:
+        #    self.speak('No GPIO Pin was specified')
 
-        This handles all commands to controll the LEDS including checking
-        the status.
-
-        Args:
-            message(obj):
-                This is the object containing the message that fired the
-                intent.  This is used to discover what to do within the
-                intent.
-        """
-        if message.data["command"].upper() == "BLINK":
-            if "iovar" in message.data:
-                if message.data["iovar"].upper() == "RED":
-                    self.speak_dialog("redledblink")
-                    if self.blink_active:
-                        self.blink_active = False
-                    else:
-                        self.blink_active = True
-                        self.blink_red_led()
-                elif message.data["iovar"].upper() == "GREEN":
-                    self.speak_dialog("greenledblink")
-                    if self.blink_active:
-                        self.blink_active = False
-                    else:
-                        self.blink_active = True
-                        self.blink_green_led()
-            else:
-                self.speak_dialog("ledblink")
+        if message.data["ColorKeyword"].upper() == "RED":
+            board_pin = 32
+            gpio_request = 12
+            LOG.info('The pin number requested was: ' + str(board_pin))
+            if "OnKeyword" in message.data:
+                self.gpio_on(board_pin, gpio_request)
+            if "OffKeyword" in message.data:
+                self.gpio_off(board_pin, gpio_request)
+            if "BlinkKeyword" in message.data:
+                if self.blink_active:
+                    self.blink_active = False
+                else:
+                    self.blink_active = True                
+                    self.gpio_blink(board_pin, gpio_request)
+        elif message.data["ColorKeyword"].upper() == "GREEN":
+            board_pin = 33
+            gpio_request = 13
+            LOG.info('The pin number requested was: ' + str(board_pin))
+            if "OnKeyword" in message.data:
+                self.gpio_on(board_pin, gpio_request)
+            if "OffKeyword" in message.data:
+                self.gpio_off(board_pin, gpio_request)
+            if "BlinkKeyword" in message.data:
                 if self.blink_active:
                     self.blink_active = False
                 else:
                     self.blink_active = True
-                    self.blink_red_led()
-                    self.blink_green_led()
-        elif message.data["command"].upper() == "STATUS":
-            if message.data["ioobject"].upper() == "LED":
-                if "iovar" in message.data:
-                    if message.data["iovar"].upper() == "RED":
-                        self.on_red_led_change()
-                    elif message.data["iovar"].upper() == "GREEN":
-                        self.on_green_led_change()
-                else:
-                    self.on_red_led_change()
-                    self.on_green_led_change()
-        elif message.data["command"].upper() == "TURN":
-            if message.data["ioobject"].upper() == "LED":
-                if "iovar" in message.data:
-                    if message.data["iovar"].upper() == "RED":
-                        if "ioparam" in message.data:
-                            if message.data["ioparam"].upper() == "ON":
-                                self.blink_active = False
-                                GPIO.set("GPIO1","On")
-                            elif message.data["ioparam"].upper() == "OFF":
-                                self.blink_active = False
-                                GPIO.set("GPIO1","Off")
-                        else:
-                            self.speak_dialog("ipparamrequired")
-                    elif message.data["iovar"].upper() == "GREEN":
-                        if "ioparam" in message.data:
-                            if message.data["ioparam"].upper() == "ON":
-                                self.blink_active = False
-                                GPIO.set("GPIO2","On")
-                            elif message.data["ioparam"].upper() == "OFF":
-                                self.blink_active = False
-                                GPIO.set("GPIO2","Off")
-                        else:
-                            self.speak_dialog("ipparamrequired")
-                else:
-                    if "ioparam" in message.data:
-                        if message.data["ioparam"].upper() == "ON":
-                            self.blink_active = False
-                            GPIO.set("GPIO1","On")
-                            GPIO.set("GPIO2","On")
-                        elif message.data["ioparam"].upper() == "OFF":
-                            self.blink_active = False
-                            GPIO.set("GPIO1","Off")
-                            GPIO.set("GPIO2","Off")
-                    else:
-                        self.speak_dialog("ipparamrequired")
+                    self.gpio_blink(board_pin, gpio_request)
+        else:
+            self.speak('No LED Color was specified')
+
+
+    def gpio_on(self, board_number, gpio_request_number):
+        self.blink_active = False
+        GPIO.setup(board_number, GPIO.OUT, initial=0)
+        GPIO.output(board_number, True)
+        LOG.info('Turning On GPIO Number: ' + str(gpio_request_number))
+        self.speak_dialog("on", data={"result": str(gpio_request_number)})
+
+    def gpio_off(self, board_number, gpio_request_number):
+        self.blink_active = False
+        GPIO.setup(board_number, GPIO.OUT, initial=0)
+        GPIO.output(board_number, False)
+        LOG.info('Turning Off GPIO Number: ' + str(gpio_request_number))
+        self.speak_dialog("off", data={"result": str(gpio_request_number)})
+
+    def gpio_blink(self, board_number, gpio_request_number):
+        GPIO.setup(board_number, GPIO.OUT, initial=0)
+        if self.blink_active:
+            threading.Timer(10, self.gpio_blink).start()
+        if self.blink_active:
+            GPIO.output(board_number, True)
+            time.sleep(0.5)
+            GPIO.output(board_number, False)
+            time.sleep(0.5)
+        LOG.info('Blinking GPIO Number: ' + str(gpio_request_number))
+        self.speak_dialog("blink", data={"result": str(gpio_request_number)})
 
     def stop(self):
-        """This function will clean up the Skill"""
         self.blink_active = False
+        pass
 
 
+# The "create_skill()" method is used to create an instance of the skill.
+# Note that it's outside the class itself.
 def create_skill():
-    """This function is to create the skill"""
+    #return GPIOSkill()
     return Respeaker2MicGpioSkill()
