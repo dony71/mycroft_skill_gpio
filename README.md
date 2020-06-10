@@ -1,4 +1,4 @@
-# <card_color='#22a7f0' width='50' height='50' style='vertical-align:bottom'/> Raspberry Pi GPIO Demo using Respeaker 2-Mic-HAT
+# Raspberry Pi GPIO Demo using Respeaker 2-Mic-HAT
 Example of interacting with GPIO pins on a Raspberry Pi
 
 ## About 
