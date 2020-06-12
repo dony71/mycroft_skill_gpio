@@ -73,9 +73,8 @@ class Respeaker2MicGpioSkill(MycroftSkill):
         GPIO.setmode(GPIO.BOARD)
 
         GPIO.setup(11,GPIO.IN)
-        GPIO.add_event_detect(11,GPIO.BOTH,ButtonHandeler)
+        GPIO.add_event_detect(11,GPIO.BOTH,self.ButtonHandeler)
         self.blink_active = False
-        self.on("Button",self.on_button_change)
 
         self.load_data_files(dirname(__file__))
         command_intent = IntentBuilder("GPIOIntent").\
@@ -140,9 +139,9 @@ class Respeaker2MicGpioSkill(MycroftSkill):
             self.speak('No LED Color was specified')
 
     def ButtonHandeler(self, channel):
-        button = GPIO.input(11)
-        #if GPIO.input(channel) == GPIO.HIGH:
-        if button:
+        #button = GPIO.input(11)
+        if GPIO.input(channel) == GPIO.HIGH:
+        #if button:
             self.speak("Button is Released")
         else:
             self.speak("Button is Pressed")
